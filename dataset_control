@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Program description:
+    
+
+Program contains functions:
+    a.
+    b.
+    c.
+
+Program autors: Evgenii Churiulin (evgenii.churiulin@kit.edu), Hendrik Feldmann,
+                Patrik Ludwig, Cusinato, Eleonora and Joaquim Pinto
+                
+Acknowledgements:
+    a.
+    b.
+    
+    
+Current Code Owner: Karlsruhe Institute of Technology (KIT)
+                    Institute of Meteorology and Climate Research (IMK)
+                    Department Troposphere Research (IMK-TRO)
+
+Contact information:
+    Evgenii Churiulin
+    E-mail: evgenii.churiulin@kit.edu
+    Phone: +49 721 608 23277
+    Address: Hermann-von-Helmholtz-Platz 1
+             Building 435, Room 502
+             76344 Eggenstein-Leopoldshafen, Germany
+    
+History:
+Version    Date       Name
+---------- ---------- ----
+   1.1     Thu Aug 29 15:29:38 2024   Evgenii Churiulin, IMKTRO
+                      Initial realise 
+"""
+
+from pathlib import Path
+
+from pydantic import (
+    BaseModel,
+    EmailStr,
+    Field,
+    SecretStr,
+    ValidationError,
+    model_validator,
+)
+
+from typing import List, Dict, Any, Union, Optional
+import yaml
+
+
+
+
+# Define the Settings model for each dataset
+class Settings4datasets(BaseModel):
+    # -- Dataset name:
+    ds_name: str = Field(
+        examples = 'HYRAS',
+        description = 'Common dataset name',
+    )
+    # -- Dataset format: 
+    ds_format: Optional[str] = Field(
+        default = 'netcdf-zipped',
+        description = 'Type of format for storing data in the current dataset',
+    )
+    # -- Dataset grid format:
+    ds_gridtype: Optional[str] = Field(
+        default = 'gridded',
+        description= 'Dataset grid type',
+    )
+    # -- Dataset level type:
+    ds_levtype: Optional[str] = Field(
+        default = 'height',
+        description = 'Dataset level type',    
+    )
+    # -- Dataset paramcorr:
+    ds_paramcorr: Dict[str, Dict[str, Union[List[Union[str, float]], bool]]] = Field(
+        example = {
+            """tn: {
+                corr_vals = [+, '273.15', K],
+                timcor_val: ['-', 24h],
+                timeshift: false,
+                unitcor: true,
+            }"""
+        },
+        description = 'Dataset dictionary with user variables')
+
+    # -- NetCDF attributes in files
+    ds_paramdict: Dict[str, str] = Field(
+        description = 'Standartized variable name in EvaSuite and current NetCDF attribute'
+    
+    )
+    # -- Common paht for all files in current dataset:
+    ds_storagedir: Path = Field(
+        description = "Base path for all files in dataset"
+    )
+    # -- Paths to the datafiles:
+    ds_storagefile: Dict[str, str] = Field(
+        description = "Path for the specific dataset file, calculated based on ds_storagedir"
+    )
+
+    # Use a root_validator to compute path4file if not provided
+    @model_validator(mode='before')
+    def set_path4file(cls, values):
+        ds_storagedir = values.get('ds_storagedir')
+        ds_storagefiles = values.get('ds_storagefile')
+
+        # -- Raise error if ds_storagedir is not provided, or ds_storagefiles not presented:
+        if not ds_storagedir and ds_storagefiles:
+            raise ValueError('Dataset control: paths not set')
+        else:
+            for ds_var, ds_file in ds_storagefiles.items():
+                values['ds_storagefile'][ds_var] = f'{ds_storagedir}/{ds_file}'
+            return values
+
+
+# Define a parent model to hold multiple datasets as a dictionary
+class DatasetsConfig(BaseModel):
+    datasets: Dict[str, Settings4datasets]  # Dictionary with dataset names as keys
+
+    def filter_by_ds_name(self, *names) -> Dict[str, Settings4datasets]:
+        """
+        Filters datasets based on provided ds_name values.
+        :param names: Dataset names to filter.
+        :return: A dictionary of filtered datasets.
+        """
+        filtered = {name: dataset for name, dataset in self.datasets.items() if name in names}
+        return filtered
+
+# Function to load YAML file
+def load_settings4datasets(file_path: str) -> DatasetsConfig:
+    with open(file_path, 'r') as file:
+        config_data = yaml.safe_load(file)  # Load the YAML file content
+        return DatasetsConfig(**config_data)  # Validate and parse with Pydantic
+
+# Usage Example
+if __name__ == "__main__":
+    try:
+        p = Path.home() / "scripts" / "tutorials" / "setting2.yaml"
+        settings = load_settings4datasets(p)
+
+        x2 = settings.model_dump()
+        
+        ## Access datasets as a dictionary
+        for ds_name, dataset in settings.datasets.items():
+            print(f"Dataset Name: {ds_name}, Format: {dataset.ds_format}") 
+            
+        # Example filtering by dataset names
+        filtered_datasets = settings.filter_by_ds_name('Eobs_v21')
+        #print("Filtered Datasets:", filtered_datasets)
+
+        filtered_dict = {name: dataset.model_dump() for name, dataset in filtered_datasets.items()}
+        print("Filtered Datasets as Dictionary:", filtered_dict)
+    except ValidationError as e:
+        print("Error loading settings:", e)
+        
