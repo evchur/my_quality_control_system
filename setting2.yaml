@@ -1,0 +1,82 @@
+# The gridded dataset eOBS, station-based for Europe
+#
+#
+datasets:
+    Eobs_v21:
+        ds_name: Eobs_v21
+        ds_paramcorr:
+            tg:
+                corr_vals: [+, '273.15', K]
+                timcor_val: ['-', 24h]
+                timeshift: false
+                unitcor: true
+
+            tn:
+                corr_vals: [+, '273.15', K]
+                timcor_val: ['-', 24h]
+                timeshift: false
+                unitcor: true
+
+            tx:
+                corr_vals: [+, '273.15', K]
+                timcor_val: ['-', 24h]
+                timeshift: false
+                unitcor: true
+
+        ds_paramdict:
+            psl: pp
+            pr_amount: rr
+            tas: tg
+            tasmax: tx
+            tasmin: tn
+            rsds: qq
+
+        ds_storagedir: /work/gg0302/observations/eObs/eObs21.0/daily/0.25deg_reg
+
+        ds_storagefile:
+            pp: 'pp_ens_mean_0.25deg_reg_v21.0e.nc'
+            rr: 'rr_ens_mean_0.25deg_reg_v21.0e.nc'
+            tg: 'tg_ens_mean_0.25deg_reg_v21.0e.nc'
+            tn: 'tn_ens_mean_0.25deg_reg_v21.0e.nc'
+            tx: 'tx_ens_mean_0.25deg_reg_v21.0e.nc'
+            qq: 'qq_ens_mean_0.25deg_reg_v21.0e.nc'
+
+    Eobs_v23:
+        ds_name: Eobs_v23
+        ds_paramcorr:
+            tg:
+                corr_vals: ['+', '273.15', 'K']
+                timcor_val: ['-', 24h]
+                timeshift: false
+                unitcor: true
+            tn:
+                corr_vals: ['+', '273.15', 'K']
+                timcor_val: ['-', 24h]
+                timeshift: false
+                unitcor: true
+            tx:
+                corr_vals: ['+', '273.15', 'K']
+                timcor_val: ['-', 24h]
+                timeshift: false
+                unitcor: true
+
+        ds_paramdict:
+            psl: pp
+            pr_amount: rr
+            tas: tg
+            tasmax: tx
+            tasmin: tn
+            rsds: qq
+            hurs: hu
+
+        ds_storagedir: /work/bg1155/COPAT2/COSMO-CLM/cosmo-clm_sp-v4.0.1/data/obs/eObs/eObs23.0/daily/0.25deg_reg/
+
+        ds_storagefile:
+            pp: 'pp_ens_mean_0.25deg_reg_v23.0e.nc' 
+            rr: 'rr_ens_mean_0.25deg_reg_v23.0e.nc'
+            tg: 'tg_ens_mean_0.25deg_reg_v23.0e.nc' 
+            tn: 'tn_ens_mean_0.25deg_reg_v23.0e.nc'
+            tx: 'tx_ens_mean_0.25deg_reg_v23.0e.nc' 
+            qq: 'qq_ens_mean_0.25deg_reg_v23.0e.nc' 
+            hu: 'hu_ens_mean_0.25deg_reg_v23.0e.nc'
+
